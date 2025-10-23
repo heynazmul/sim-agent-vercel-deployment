@@ -31,7 +31,8 @@ export async function POST(request) {
       })
     });
 
-    const data = await response.json();
+    const data = await response.json()
+          console.log('OpenRouter API Response:', JSON.stringify(data, null, 2));;
     
     if (data.choices && data.choices[0] && data.choices[0].message) {
       return NextResponse.json({
