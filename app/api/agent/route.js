@@ -5,12 +5,12 @@ export async function POST(request) {
     const body = await request.json();
     const userMessage = body.message;
 
-    // Call Sim AI API
-    const response = await fetch('https://api.simli.ai/v1/chat', {
+    // Call Sim AI Workflow API
+    const response = await fetch('https://www.sim.ai/api/workflows/4334b894-60bb-4f0b-8635-44ab70bfff2b/execute', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.SIMLI_API_KEY}`
+        'X-API-Key': process.env.SIMLI_API_KEY
       },
       body: JSON.stringify({
         message: userMessage,
