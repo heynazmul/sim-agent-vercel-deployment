@@ -1,30 +1,31 @@
-import { NextResponse } from 'next/server';
+export default async function handler(req, res) {
+  const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+  const userMessage = req.body.message;
 
-export async function POST(request) {
   try {
-    const body = await request.json();
-    const userMessage = body.message;
-
-    // Call Sim AI Workflow API
-    const response = await fetch('https://www.sim.ai/api/workflows/4334b894-60bb-4f0b-8635-44ab70bfff2b/execute', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': process.env.SIMLI_API_KEY
+        'Authorization': `Bearer ${openRouterApiKey}`
       },
       body: JSON.stringify({
-        message: userMessage,
-        sessionId: `session_${Date.now()}`
+        model: 'openai/gpt-3.5-turbo', // or another model you want from OpenRouter
+        messages: [
+          { role: 'system', content: 'You are Sim AI, a helpful assistant.' },
+          { role: 'user', content: userMessage }
+        ]
       })
     });
 
+    if (!response.ok) {
+      throw new Error(`OpenRouter error: ${await response.text()}`);
+    }
+
     const data = await response.json();
-    return NextResponse.json({ result: data.response || data.message || 'Response from Sim AI' });
+    const aiText = data.choices[0].message.content;
+    res.status(200).json({ text: aiText });
   } catch (error) {
-    console.error('Error:', error);
-    return NextResponse.json(
-      { result: 'Error connecting to Sim AI', error: error.message },
-      { status: 500 }
-    );
+    res.status(500).json({ text: "Error: " + error.message });
   }
 }
