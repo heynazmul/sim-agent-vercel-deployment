@@ -4,40 +4,28 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const userMessage = body.message || body.topic || 'Tell me about baby food';
-
-    // Call OpenRouter API for content generation
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    
+    // Call Sim AI API for content generation
+    const response = await fetch('https://api.simli.ai/startAISession', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer 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',
-        'HTTP-Referer': 'https://babyfoodwriter.vercel.app',
-        'X-Title': 'Baby Food Content Writer'
+        'Authorization': `Bearer ${process.env.SIMLI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'meta-llama/llama-3.1-8b-instruct:free',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a professional baby food content writer. Create engaging, informative, and helpful content about baby food, nutrition, feeding guides, and parenting tips. Write in a friendly, accessible tone that parents will appreciate.'
-          },
-          {
-            role: 'user',
-            content: userMessage
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000
+        message: userMessage,
+        sessionId: `session_${Date.now()}`,
+        faceId: 'default'
       })
     });
-
-    const data = await response.json()
-          console.log('OpenRouter API Response:', JSON.stringify(data, null, 2));;
     
-    if (data.choices && data.choices[0] && data.choices[0].message) {
+    const data = await response.json();
+    console.log('Sim AI API Response:', JSON.stringify(data, null, 2));
+    
+    if (data.message || data.response) {
       return NextResponse.json({
-        result: data.choices[0].message.content,
-        message: data.choices[0].message.content
+        result: data.message || data.response,
+        message: data.message || data.response
       });
     } else {
       return NextResponse.json({
